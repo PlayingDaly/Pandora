@@ -1,5 +1,5 @@
 local fs = filesystem
-local computerID = nil
+--local computerID = nil
 local mainDriveID = nil
 local nic = nil
 local bcp = 9998
@@ -16,7 +16,7 @@ local function networkSetup()
   event.listen(nic)
   nic:open(bcp) 
   print("Network Configured")
-  print("Broadcasting Request for deployment on port 9998")
+  --print("Broadcasting Request for deployment on port", bcp)
  end
 
 end
@@ -38,6 +38,12 @@ local function RewriteEEProm(prom)
 	computer.beep()
 end
 
+local function broadcast(mainDriveID)
+ print("Broadcasting Request for deployment on port", bcp)
+ nic:broadcast(bcp, "0x0011", mainDriveID)
+end
+
+
 --Startup
 boot()
 
@@ -49,7 +55,8 @@ end
 
 
 if nic then
- nic:broadcast(bcp, "0x0001", computerID, mainDriveID)
+ --nic:broadcast(bcp, "0x0011", computerID, mainDriveID)
+ broadcast(mainDriveID)
 end
 
 while true do
@@ -57,10 +64,10 @@ while true do
 
 	if ct > t + 10000 then
 		t = ct
-		nic:broadcast(broadcastPort, "0x0001", computerID, mainDriveID)
+		broadcast(mainDriveID)
 	end
 
-	e, s, sender, port, message, cid, mdid = event.pull()
+	e, s, sender, port, message, cid, mdid = event.pull(0.1)
 	
 	if e == "NetworkMessage" and port == rcp then
 		print(s,sender,port,message)
