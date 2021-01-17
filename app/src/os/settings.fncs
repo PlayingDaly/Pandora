@@ -1,0 +1,9 @@
+--Settings file for the PANDORA OS
+ScreenAutoDetect=true
+NTP=Client							--Server or Client
+CPULocation=							--This should define if its central,factory
+CPUPurpose=							--This will be either Central Server,NTP server, Factory Listener, Factory Provider,Transmit Router, Factory Control, Storage
+CPUName=
+NIC=
+WhiteList=
+BlackList=
