@@ -1,6 +1,6 @@
 require "libs.colors"
 require "listeners.dataChangedListener"
-require "listeners.mouseEvents"
+require "listeners.mouselistener"
 
 --Screen Write handles writing ALL data to a Screen
 Drawing = {}
@@ -186,51 +186,80 @@ Drawing.Rectangle = function(d,p,h,w,r,zIndex,fcolor,bcolor)
 		end
 	end
 	function this:MouseEnter(...)
-		local x = select(1,...)
-		local y = select(2,...)
+		local x = select(2,...)
+		local y = select(3,...)
 		if self:CheckPoint(x,y,true)	then
 			self.mouseListeners.isMouseOver = true
 		end
 	end
 	function this:MouseLeave(...)
-		local x = select(1,...)
-		local y = select(2,...)
+		local x = select(2,...)
+		local y = select(3,...)
 		if self:CheckPoint(x,y,false) then
 			self.mouseListeners.isMouseOver = false
 		end
 	end
 	function this:LeftClick(color)
-		self:GetDisplay():SetDisplayPage(self.leftclickPg)
+		
 		self:ImmediateUpdate(false, color)
-		self.mouseListeners.isRightClicked = false;
+		--self.mouseListeners.isRightClicked = false
+		if not color then 
+			self.mouseListeners.isLeftClicked = false 
+		else 
+			self:GetDisplay():SetDisplayPage(self.leftclickPg)
+			self.mouseListeners.isLeftClicked = true
+		end
+		
 	end
 	function this:RightClick(color)
-		self:GetDisplay():SetDisplayPage(self.rtclickPg)
+		
 		self:ImmediateUpdate(false, color)
-		self.mouseListeners.isLeftClicked = false;
+		if not color then 
+			self.mouseListeners.isRightClicked = false
+		else 
+			self:GetDisplay():SetDisplayPage(self.rtclickPg)
+			self.mouseListeners.isRightClicked = true
+		end
 	end
 	function this:Click(lfunc, rfunc,...)
-		local x = select(1,...)
-		local y = select(2,...)
-		local bitField = select(3,...)
+		local x = select(2,...)
+		local y = select(3,...)
+		local bitField = select(4,...)
 		local isClicked = self:CheckPoint(x,y,true)
 
-		--L/R Click same nav tab doesn't change'-----------------------HERE 
+		--Reset any previously clicked buttons
+		--print(string.format("%s\tL:%s\tR:%s",self.name,self.mouseListeners.isLeftClicked,self.mouseListeners.isRightClicked))
+		if self.mouseListeners.isLeftClicked then lfunc(false) end
+		if self.mouseListeners.isRightClicked then rfunc(false) end
 
 		--Check the bit field for the L or R Click
 		if bitField & 1 > 0 then
-			-- left mouse pressed			
-			if self.mouseListeners.isLeftClicked ~= isClicked then
+			-- left mouse pressed
+			if isClicked then
+				lfunc(true)
 				self.mouseListeners.isLeftClicked = isClicked
-				if lfunc then lfunc(self) end
 			end
+			--if self.mouseListeners.isLeftClicked ~= isClicked then
+			--	print(self.name, "clicked changed to", isClicked)
+			--	self.mouseListeners.isLeftClicked = isClicked
+			--	print(self.name, "clicked changed to", self.mouseListeners.isLeftClicked)
+			--	if rfunc then rfunc(false) end
+			--	if lfunc then lfunc(isClicked) end
+			--end
 
 		elseif bitField & 2 > 0 then
 			-- right mouse pressed
-			if self.mouseListeners.isRightClicked ~= isClicked then
+			if isClicked then
+				rfunc(true)
 				self.mouseListeners.isRightClicked = isClicked
-				if rfunc then rfunc(self) end
 			end
+			--if self.mouseListeners.isRightClicked ~= isClicked then				
+			--	print(self.name, "clicked changed to", isClicked)
+			--	self.mouseListeners.isRightClicked = isClicked
+			--	print(self.name, "clicked changed to", self.mouseListeners.isRightClicked)
+			--	if lfunc then lfunc(false) end
+			--	if rfunc then rfunc(isClicked) end
+			--end
 		end
 	end
 
