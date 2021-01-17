@@ -135,8 +135,6 @@ function Display(n,s,dt,x,r,options)
 		end
 	end
 	function this:SetDisplayPage(p)
-
-		--self:ResetDisplay()
 		p:ImmediateUpdate()
 
 		--print(p.name, " set as display page. B:", p.bcolor:Details())

@@ -19,7 +19,7 @@ end
 local function LargeScreenDisplay(n,w, ismirror)
 	local com = component.proxy(component.findComponent(n))
 	
-	if not com and com[1] then
+	if not com[1] then
 		Log.Error("Unable to find a screen with the name "..n)
 		return nil
 	else
