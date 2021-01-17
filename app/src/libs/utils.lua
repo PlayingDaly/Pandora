@@ -146,37 +146,25 @@ Utils = {
                                 return nil
                             end,
             getAllKeysForValue = function(t, value, childKey)
-                                    --print("Searching for ", value, " with childKey: ", childKey)
                                     local result = {}
                                     for k,v in pairs(t) do
-
-                                    --Catch rare case of improper use of function call. If doing simple key lookup setContains is a better choice
+                                        --Catch rare case of improper use of function call. 
+                                        --If doing simple key lookup setContains is a better choice
                                         if childKey and k == childKey then
                                             result[#result + 1] =  k
                                         else
                                             if type(v) == "table" then
-                                                
-                                                --for kk,vv in pairs(v) do print(kk,vv) end
-                                                
-                                                --print(Utils.table.setContains(v,"listenertype"))    --This returns false???? WHY????????
-                                                --computer.stop()
-
                                                 if Utils.table.setContains(v,value) then
-                                                    --print("Table contains value")
                                                     result[#result + 1] =  k
-                                                --elseif childKey and Utils.table.setContains(v,childKey) and v[childKey] == value then
                                                 elseif childKey then
-                                                    --for kk,vv in pairs(v) do print(kk,vv) end
-                                                    --print("Item Child key: ", v[childkey])
                                                     if Utils.table.setContains(v,childKey) and v[childKey] == value then
                                                         result[#result + 1] =  k
                                                     end
                                                 else
-                                                    --print("Search deeper")
                                                     local res = Utils.table.getAllKeysForValue(v,value,childKey)
                                                     if res then 
-                                                        for k,v in ipairs(res) do
-                                                            result[#result + 1] =  v
+                                                        for kk,vv in ipairs(res) do
+                                                            result[#result + 1] =  k
                                                         end
                                                     end
                                                 end
@@ -184,13 +172,13 @@ Utils = {
                                                 result[#result + 1] =  k
                                             end
                                         end
-
-                                        --computer.stop()
                                     end
 
                                     if result and #result > 0 then
+                                        --print(#result,"results found!")
                                         return result
                                     else
+                                        --print("No Results Found")
                                         return nil
                                     end
                                  end,
