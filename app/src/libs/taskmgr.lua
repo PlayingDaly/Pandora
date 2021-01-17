@@ -108,7 +108,7 @@ function TaskMgr:spawn(func, single_run, ...)
             local normal, err_msg = xpcall(func, task.error_handler, vars)
             if not normal then
                 task.error_msg = err_msg
-                print(string.format('[Error] Task %s(pid %d) | %s', task.name, task.pid, task.error_msg))
+                print(string.format('[Error] Task %s(pid %d) |\n %s', task.name, task.pid, task.error_msg))
             end
             coroutine.yield()
         end)
@@ -119,7 +119,7 @@ function TaskMgr:spawn(func, single_run, ...)
                 local normal, err_msg = xpcall(func, task.error_handler, vars)
                 if not normal then
                     task.error_msg = err_msg
-                    print(string.format('[Error] Task %s(pid %d) | %s', task.name, task.pid, task.error_msg))
+                    print(string.format('[Error] Task %s(pid %d) |\n %s', task.name, task.pid, task.error_msg))
                     -- kill the coroutine
                     break
                 end
