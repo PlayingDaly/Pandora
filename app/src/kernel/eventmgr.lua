@@ -1,6 +1,6 @@
 require "libs.utils"
 require "libs.datastructs"
-require "libs.eventlistener"
+require "listeners.eventlistener"
 
 --Event manager framework.  Listens for event presses and executes them
 EventManager = {
@@ -11,6 +11,7 @@ EventManager = {
 function EventManager:RegisterListener(source, handler, type)	
 	local elist = EventListener(source, handler,type)
 	self.Listeners[#self.Listeners + 1] = elist
+
 	return elist
 end
 
@@ -24,32 +25,31 @@ end
 
 EventManager.Listen = function()
 
-		e,s, p1,p2,p3,p4,p5,p6,p7,p8,p9 = event.pull(0.1)
+	--e,s, p1,p2,p3,p4,p5,p6,p7,p8,p9 = event.pull(0.1)
+	e = table.pack(event.pull(0.1))
 
-		if e and e ~= "FileSystemUpdate" then
-			--print(e,p1,p2)
-			--Log.Information(string.format("%s %s %s",e,p1,p2))
-			--print(#EventManager.Listeners)
-			--computer.stop()
+	if e then 
+		if e[1] and e[1] ~= "FileSystemUpdate" then
 			--Pass the Event to the correct registered listener
-			--computer.stop()
 			if EventManager.Listeners then
-				--for k,v in ipairs(EventManager.Listeners) do print(k,v.source.name, v.listenertype) end
+				local listeners = Utils.table.getAllKeysForValue(EventManager.Listeners, e[1], "listenertype")
+
+				--for k,v in pairs(listeners) do print(k, v, #EventManager.Listeners, EventManager.Listeners[v]) end
 				--computer.stop()
-				local listeners = Utils.table.getAllKeysForValue(EventManager.Listeners, e, "listenertype")
-				--print("Found Listeners: ", #listeners)
+
+				--Removes e and 
+				if #e > 1 then
+					table.remove(e,1)		--Remove the Message name
+				end
+
 				--If listener found then process the event
 				if listeners then
-				--for kk,vv in pairs(EventManager.Listeners) do print(kk,vv.source.name) end
-				--computer.stop()
-					for k in ipairs(listeners) do
-						--print("Listener: ",k,EventManager.Listeners[k]:Details())
-						EventManager.Listeners[k]:Execute(p1,p2,p3,p4,p5,p6,p7,p8,p9)
+					for k,v in ipairs(listeners) do
+						--print("Listener: ",k,v,EventManager.Listeners[v]:Details())
+						EventManager.Listeners[v]:Execute(e)
 					end
 				end
 			end
-
-			--if e == "OnMouseMove" then computer.stop() end
 		end
-	
+	end
 end
