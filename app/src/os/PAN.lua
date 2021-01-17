@@ -89,6 +89,7 @@ function Program()
 		TaskMgr:spawn(SysTime.Start)
 		TaskMgr:spawnTimed(SysConfig.Display_Manager.refresh_interval,SysConfig.Display_Manager.execute.Render)
 		TaskMgr:spawn(SysConfig.Event_Manager.execute.Listen)
+
 		--Run the OS Indefinitely
 		TaskMgr:run()
 
