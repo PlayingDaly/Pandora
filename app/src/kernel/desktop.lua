@@ -48,67 +48,70 @@ local function BuildNavigationBar(display)
 															}
 														)
 
-	--for i=1,#tabs do
 	local i = 1
-	for k in pairs(PageManager) do
-		PANDORA_Desktop.navbar.navbarbase:AddChild(
-			UI.Components.Button(display,
-								(PANDORA_Desktop.navbar.navbarbase.startpoint.x + math.floor((i-1) * navbarTabSize) + i),
-								PANDORA_Desktop.navbar.navbarbase.startpoint.y,
-								navbarHeight,
-								navbarTabSize,
-								UI.Components.TextBlock(display,
-														UI.Components.Point(PANDORA_Desktop.navbar.navbarbase.startpoint.x + (i-1) * navbarTabSize + i,
-																			PANDORA_Desktop.navbar.navbarbase.startpoint.y + math.floor(navbarHeight/2)
-																			),
-														Utils.strings.replace(k,"_"),
-														false,
-														{
-															continuousText = false,
-															textalignment = UI.TextAlign.Center,
-															maxlength = navbarTabSize
-														}
-														),
-								false,
-								{
-									name= "btn_tab_"..k,
-									background = UI.SysColors.Write,
-									foreground = UI.SysColors.Highlight,
-									click = function(src,...) 
-												src:Click(	function(src) 							--Left Click function
-																	local c = (src.mouseListeners.isLeftClick and Colors.Yellow or nil)
-																	src:LeftClick(c) 
-																end,
-															function(src)							--Right Click function
-																	local c = (src.mouseListeners.isLeftClick and Colors.Aqua or nil)
-																	src:RightClick(c)
-																end,
-															...)									--Pass through args
-												end,
-									leftclickPg = PageManager[k](1,1,pglayout),
-									rtclickPg = PageManager[k](2,1,pglayout),
-									--[[
-										--EXAMPLE OF MOUSE ENTER/ LEAVE EVENTS. NOT RECOMMENDED AS ImmediateUpdate can cause Screen flickering
+	for k,v in ipairs(PageManagerTabOrder) do
+		if PageManager[v] and PageManager[v] ~= nil then
+			PANDORA_Desktop.navbar.navbarbase:AddChild(
+				UI.Components.Button(display,
+									(PANDORA_Desktop.navbar.navbarbase.startpoint.x + math.floor((i-1) * navbarTabSize) + i),
+									PANDORA_Desktop.navbar.navbarbase.startpoint.y,
+									navbarHeight,
+									navbarTabSize,
+									UI.Components.TextBlock(display,
+															UI.Components.Point(PANDORA_Desktop.navbar.navbarbase.startpoint.x + (i-1) * navbarTabSize + i,
+																				PANDORA_Desktop.navbar.navbarbase.startpoint.y + math.floor(navbarHeight/2)
+																				),
+															Utils.strings.replace(v ,"_"),
+															false,
+															{
+																continuousText = false,
+																textalignment = UI.TextAlign.Center,
+																maxlength = navbarTabSize
+															}
+															),
+									false,
+									{
+										name= "btn_tab_"..v,
+										background = UI.SysColors.Write,
+										foreground = UI.SysColors.Highlight,
+										click = function(src, ...) 
+													src:Click(	function(changed) 							--Left Click function
+																		local c = (changed and Colors.Yellow or nil)
+																		--print("L:",src.name,changed,c)
+																		src:LeftClick(c) 
+																	end,
+																function(changed)							--Right Click function
+																		local c = (changed and Colors.Aqua or nil)
+																		--print("R:",src.name,changed,c)
+																		src:RightClick(c)
+																	end,
+																table.unpack(...))						--Pass through args
+													end,
+										leftclickPg = PageManager[v](1,1,pglayout),
+										rtclickPg = PageManager[v](2,1,pglayout),
+										--[[
+											--EXAMPLE OF MOUSE ENTER/ LEAVE EVENTS. NOT RECOMMENDED AS ImmediateUpdate can cause Screen flickering
 																			
-									mouseenter = function(src,...) 
-													src:MouseEnter(...) 
-													if src.mouseListeners.isMouseOver then
-														--src:SetBackground(Colors.Yellow)
-														src:ImmediateUpdate(Colors.Yellow)
-													end
-												end,
-									mouseleave = function(src,...) 
-													src:MouseLeave(...) 
-													if not src.mouseListeners.isMouseOver then
-														--src:SetBackground(Colors.Yellow)
-														src:ImmediateUpdate(Colors.Write)
-													end
-												end,
-									]]
-								}
-							)
-		)
-		i = i + 1
+										mouseenter = function(src,...) 
+														src:MouseEnter(...) 
+														if src.mouseListeners.isMouseOver then
+															--src:SetBackground(Colors.Yellow)
+															src:ImmediateUpdate(Colors.Yellow)
+														end
+													end,
+										mouseleave = function(src,...) 
+														src:MouseLeave(...) 
+														if not src.mouseListeners.isMouseOver then
+															--src:SetBackground(Colors.Yellow)
+															src:ImmediateUpdate(Colors.Write)
+														end
+													end,
+										]]
+									}
+								)
+			)
+			i = i + 1
+		end
 	end
 	
 	--Sys Clock
@@ -141,18 +144,22 @@ end
 
 function PANDORA_Desktop:InitializeDesktop(display)
 	BuildNavigationBar(display)
-
+	local lastRender = nil
 	for k,v in pairs(self.navbar.navbarbase.children) do
 		display:AddNavbarItem(v)
 
 		--If the Sys Status entry found force the left click action	
 		if string.match(tostring(v.name), "System_Status") then
-			v.mouseListeners.isLeftClick = true
-			v:LeftClick(UI.SysColors.Warning)
-			
-			--Re-add the item to the change stack......HACK approach
-			--v:NotifyChanged()
-			--v.leftclickPg:NotifyChanged()
+			lastRender = v
+		else
+			v:ImmediateUpdate()
 		end
 	end
+
+	--Puts the Selected Tab on the screen
+	if lastRender then
+		lastRender.mouseListeners.isLeftClicked = true
+		lastRender:LeftClick(UI.SysColors.Warning)
+	end
+
 end
