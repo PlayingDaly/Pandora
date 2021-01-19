@@ -8,18 +8,21 @@ function PortData(p,options)
 			canReceive = false,		--Can the port be used to catch data(decided at the sending location) ie. should data be returned using this port
 			responsePort = nil,
 			isRestricted = false,
+			validCodes = nil,
 			sendFunc = nil,
 			receiveFunc = nil
 	}
 		
 		function this:ValidateAndProcess(...)
-			print("processing port", self.port)
-			--print("args:", select(1,...))
+			local code = select(3,...)
+			print(string.format("Processing port %s with code %s", self.port, NetworkCodeLookup(code)))
+
+			--Check if the code received is valid for the port
+			--FUTURE
 
 			--Check if Receive Func is set. if so process the func
 			if self.receiveFunc then
-				print("Calling Receive Func")
-				self.receiveFunc(...)
+				self.receiveFunc(self, ...)
 			end
 		end
 
@@ -31,6 +34,8 @@ function PortData(p,options)
 		if options.isRestricted then this.isRestricted = options.isRestricted end
 		if options.sendFunc then this.sendFunc = options.sendFunc end
 		if options.receiveFunc then this.receiveFunc = options.receiveFunc end
+		if options.responsePort then this.responsePort = options.responsePort end
+		if options.validCodes then this.validCodes = options.validCodes end
 	end
 
 	return this
@@ -80,9 +85,9 @@ end
 
 function PortMap:SetRestrictedPorts()
 
-PortMap[9997] = CreatePort(9997, {canSend = true, canReceive = false, isRestricted = true, description = "New CPU setup response port"})
-PortMap[9998] = CreatePort(9998, {	canSend = true, canReceive = false, isRestricted = true, responsePort = PortMap[9997], description = "New CPU setup request port",
-									sendFunc = PortActions.SendCPUSetup, receiveFunc = PortActions.ReceiveCPUSetup})
+PortMap[9997] = CreatePort(9997, {canSend = true, canReceive = false, isRestricted = true, description = "Factory response port"})
+PortMap[9998] = CreatePort(9998, {canSend = true, canReceive = false, isRestricted = true, responsePort = PortMap[9997], description = "Factory request port",
+								  sendFunc = PortActions.SendCPUSetup, receiveFunc = PortActions.ReceiveCPUSetup})
 PortMap[9999] = CreatePort(9999, {canSend = true, canReceive = false, isRestricted = true, description = "NTP Systime broadcast port",
 									sendFunc = PortActions.SendNTP, receiveFunc = PortActions.ReceiveNTP})
 

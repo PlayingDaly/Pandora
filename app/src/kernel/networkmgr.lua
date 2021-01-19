@@ -5,10 +5,9 @@ require "libs.networkrouter"
 
 NetworkManager = {
 	nic = nil,						--Primary Network Card(FUTURE: Allow for multiple nics)
-	listenPorts = {-1},				--Set to -1 means listen for everything
 	connectedRouters = nil,
-	whitelist = {},
-	blacklist = nil
+	factoryRequests = {},
+
 }
 function NetworkManager:Initialize()
 	print("Starting Network Manager.....")
@@ -47,6 +46,10 @@ function NetworkManager:Initialize()
 
 end
 
+function NetworkManager:AddActionRequest()
+	--Requests that require actions to be taken(New Factory Deployment. Settings)
+
+end
 
 --When 
 NetworkManager.HandleMessage = function(src, args)

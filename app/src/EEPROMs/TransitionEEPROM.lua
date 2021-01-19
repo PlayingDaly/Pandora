@@ -1,3 +1,0 @@
---Handles the copying of files
---Creates print notifications for the copying/startup
---Print notifications needs to write to screen if one is detected

@@ -1,4 +1,5 @@
-
+require "actions.Deploy"
+require "libs.networkcode"
 
 --Port Actions File
 --Defines the functions(Send/Receive) for each port
@@ -21,8 +22,8 @@ PortActions = {}
 
 
 --Port 9998 - New Computer Setup Request
-PortActions.ReceiveCPUSetup = function(...)
-	local srcID = select(1,...)
+PortActions.ReceiveCPUSetup = function(portData, ...)
+	local address = select(1,...)
 	local netcode = select(3,...)
 	local driveID = select(4,...)
 
@@ -32,9 +33,11 @@ PortActions.ReceiveCPUSetup = function(...)
 	elseif netcode == "0x0011" then
 		--Register the computer if not registered.
 		
-
 		--Process the Deployment actions to send
-		print("Process Deployment")
+		print("Process Deployment")		
+		Deploy:RemoteFactorySetup(address,portData.responsePort.port)		
+		print("RMT Drive: ", driveID)
+		print("Deployment Complete")
 	end
 end
 PortActions.SendCPUSetup = function()

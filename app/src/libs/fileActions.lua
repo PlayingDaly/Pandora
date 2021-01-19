@@ -22,8 +22,10 @@ function File:Read(path)
     end
 end
 
-function File:Write(path, data)
-    local fileData = filesystem.open(path,"w")
+function File:Write(path, data, overwrite)
+    overwrite = overwrite and true
+    local writeMode = (overwrite and "w" or "a")
+    local fileData = filesystem.open(path,writeMode)
     fileData:write(data)
 end
 function File:Copy(src, dest)
@@ -72,7 +74,7 @@ function FileCopyItem(path)
 
         --Assuming if the path ends with a / then its a dir
         if Utils.strings.ends_with(path,'/') then
-            local r = self:CreateParentDir(path)            
+            local r = self:CreateParentDir(path)
 
             if Utils.strings.starts_with(sPath, "/") then
                 sPath = string.sub(sPath,2)

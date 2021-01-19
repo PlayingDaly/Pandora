@@ -1,40 +1,30 @@
-I'm gonna be the first line
-The SecondLine
-And the ThirdLine
 
 
+local function privateclass()
+	local this = {
+		variableA = 0
+		variableB = 0
+		variableC = nil
+	}
+
+	function this:PrivateMethod()
+		--This is a private method only accessible on the "class"
+	end
+
+	return this
+end
 
 
+function publicclass()
+	local this = privateclass()
+	this.variableA = 12
+	this.variableX = "New Var"
 
 
+	return this
+end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-I'm line 40
+ParentTable ={
+	Class1 = publicclass(),
+	Class2 = publicclass()
+}
