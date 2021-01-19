@@ -30,6 +30,7 @@ SysConfig = {
 	NumGenerator = math.random,
 	Time = SysTime,
 	Debug = false,
+	DebugLogPath = '/src/data/debug.txt',
 
 	Display_Manager =	nil,
 	Event_Manager = nil,
@@ -73,9 +74,16 @@ function Program()
 	---------------------------------EXAMPLE CODE FOR FILE COPY/DEPLOY KEEP--------------------------
 	--Copy the entire drive using /
 	--tt = Folder:CopyFolderToBuffer("/", {"/.vs"}, true)
-	--for k,v in ipairs(tt) do Log.Debug(k.." "..v.path) end
+
+	--Test Write to debug file
+	--local str = ''
+	--for k,v in ipairs(tt) do str = str..string.format("%s\n",v.path)  end
+	--File:Write(SysConfig.DebugLogPath, str, false)
+	--computer.stop()
+
 	--Copies the Buffer to the drive
 	--Folder:WriteFolderBuffer('/testCopy/',tt)
+	--computer.stop()
 	-------------------------------------------------------------------------------------------------
 
 
