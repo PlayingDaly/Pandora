@@ -14,8 +14,11 @@ function PortData(p,options)
 	}
 		
 		function this:ValidateAndProcess(...)
-			local code = select(3,...)
-			print(string.format("Processing port %s with code %s", self.port, NetworkCodeLookup(code)))
+			--local code = select(3,...)
+
+			--if self.port ~= 9999 then
+			--	print(string.format("Processing port %s with code %s", self.port, NetworkCodeLookup(code)))
+			--end
 
 			--Check if the code received is valid for the port
 			--FUTURE
@@ -88,7 +91,7 @@ function PortMap:SetRestrictedPorts()
 PortMap[9997] = CreatePort(9997, {canSend = true, canReceive = false, isRestricted = true, description = "Factory response port"})
 PortMap[9998] = CreatePort(9998, {canSend = true, canReceive = false, isRestricted = true, responsePort = PortMap[9997], description = "Factory request port",
 								  sendFunc = PortActions.SendCPUSetup, receiveFunc = PortActions.ReceiveCPUSetup})
-PortMap[9999] = CreatePort(9999, {canSend = true, canReceive = false, isRestricted = true, description = "NTP Systime broadcast port",
+PortMap[9999] = CreatePort(9999, {canSend = true, canReceive = true, isRestricted = true, description = "NTP SysTime broadcast port",
 									sendFunc = PortActions.SendNTP, receiveFunc = PortActions.ReceiveNTP})
 
 

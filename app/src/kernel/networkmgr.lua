@@ -35,7 +35,7 @@ function NetworkManager:Initialize()
 	
 	
 	--Opening the nic to listen for events
-	--self.nic:Open(9999)
+	self.nic:Open(9999)
 	self.nic:Open(9998)
 	event.listen(self.nic)
 
@@ -56,7 +56,7 @@ NetworkManager.HandleMessage = function(src, args)
 	--If port is black listed ignore it
 	if NetworkManager.blacklist and #NetworkManager.blacklist > 0 then
 		return
-	else
+	elseif args[2] ~= NetworkManager.nic then
 		local sender = args[2]
 		local port = args[3]
 		local code = args[4]

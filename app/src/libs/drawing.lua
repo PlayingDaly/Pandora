@@ -8,6 +8,7 @@ Drawing = {}
 local function drawingbase(disp,p,x,y,r,fcolor,bcolor)
 	local this ={
 		type = 1,													--Type of 1 lets the render engine know its a renderable Object
+		--uuid = Utils.general.generateUuid(),
 		fcolor = fcolor or Colors.White,
 		bcolor = bcolor or Colors.Transparent,
 		drawY = y or 1,
@@ -62,10 +63,10 @@ local function drawingbase(disp,p,x,y,r,fcolor,bcolor)
 		return self.dataChangedListener:GetRenderOrder()
 	end
 	function this:GetDisplayWidth()
-		return self.startpoint.x + self.drawX
+		return self.drawX -- - self.startpoint.x
 	end
 	function this:GetDisplayHeight()
-		return self.startpoint.y + self.drawY
+		return self.drawY -- - self.startpoint.y
 	end
 	
 	function this:DrawToScreen(gpu)

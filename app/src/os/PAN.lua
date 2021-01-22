@@ -47,6 +47,9 @@ function Initialize()
  	print(".....Initializing "..SysConfig.AppName.."...........")
  	print(".....System Configuration Loading...")
 
+	 --Initialize the System Clock
+	 SysConfig.Time:InitClient()
+
 	--Read Settings file here
 	SysConfig.Settings_Manager = AppModule:RegisterAndInitialize({enabled = true, execute = SettingsManager})
 	
@@ -94,7 +97,9 @@ function Program()
 		SysConfig.Display_Manager.execute.Render()
 	else
 		--App seems to run with 2 or more tasks, 1 task(spawned) causes massive fps drop and stuttering
-		TaskMgr:spawn(SysTime.Start)
+		--TaskMgr:spawnTimed(30,SysTime.RequestTime())
+		TaskMgr:spawnTimed(0.3,SysTime.Start)
+		--TaskMgr:spawn(SysTime.Start)
 		TaskMgr:spawnTimed(SysConfig.Display_Manager.refresh_interval,SysConfig.Display_Manager.execute.Render)
 		TaskMgr:spawn(SysConfig.Event_Manager.execute.Listen)
 

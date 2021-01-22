@@ -2,7 +2,7 @@ require "libs.fileactions"
 require "libs.utils"
 
 SettingsManager = {
-	FilePath = "os/settings.fncs"
+	FilePath = "/src/os/settings.fncs"
 }
 
 function SettingsManager:ReadSettings()
@@ -34,4 +34,13 @@ function SettingsManager:Initialize()
 	--	print("Settings File Found")
 	--end
 
+end
+
+SettingsManager.CreateRemoteSettings = function()
+	local data = ''
+
+
+	print("Create Settings file for remote deploy")
+
+	return SettingsManager.FilePath, data
 end

@@ -14,5 +14,9 @@ PageBase = function(event, order, layout)
 
 	end
 
+	--Header
+	function this:SetHeader(text, point)
+	
+	end
 	return this;
 end

@@ -7,6 +7,35 @@ local finalEEprom = ''
 local allFilesSent = false
 local t = computer.millis()
 
+starts_with = function(str, start) return str:sub(1, #start) == start end
+ends_with = function(str, ending)  return ending == "" or str:sub(-#ending) == ending end
+lastIndexOfChar =   function(str,char) return string.find(str, char.."[^"..char.."]*$") end
+
+--Wait for X seconds before starting 
+function StartupPause(s)
+    local wait = true
+    local time = s * 1000
+
+    print(string.format("Waiting for %s seconds before contacting the central server.\nPLEASE CLOSE THIS INTERFACE BEFORE THAT TIME OR THE GAME IS LIKELY TO CRASH", s))
+
+    while wait do
+	    local ct = computer.millis()
+        local tl = (time - ct)
+        
+        --If 10s on less left then beep the computer every second
+        if tl <= 10000 and tl % 1000 == 0 then
+            computer.beep()
+        end
+
+        if tl % 1000 == 0 then print(tl/1000) end
+
+        if ct > t + time then
+		    t = ct
+            wait = false
+	    end
+    end
+end
+
 local function networkSetup()
     print("Setting up Network Connection")
     networkCard = component.proxy(component.findComponent("networkCard"))
@@ -31,6 +60,8 @@ local function mountDrive()
     end
 end
 local function boot()
+    --Set Wait timer to 60s
+    --StartupPause(60)              --Currently Breaks ENTIRE GAME
     print("Attempting to Boot Primary Drive")
     if fs.initFileSystem("/dev") ~= true then error("Failed to mount /dev") end
     for _, entry in ipairs(fs.childs("/dev")) do
@@ -43,11 +74,6 @@ local function boot()
     end  
     networkSetup()
 end
-
-starts_with = function(str, start) return str:sub(1, #start) == start end
-ends_with = function(str, ending)  return ending == "" or str:sub(-#ending) == ending end
-lastIndexOfChar =   function(str,char) return string.find(str, char.."[^"..char.."]*$") end
-
 function Write(path, data)
     local fileData = fs.open(path,"w")
 
@@ -111,7 +137,6 @@ local function RewriteEEProm(prom)
 	computer.reset()
 	computer.beep()
 end
-
 local function broadcast(mainDriveID)
  print("Broadcasting Request for deployment on port", bcp)
  nic:broadcast(bcp, "0x0011", mainDriveID)
@@ -124,23 +149,16 @@ boot()
 if not mainDriveID then
  computer.panic("Please Insert a hard drive and restart the computer") 
 end
-
 if nic then
  broadcast(mainDriveID)
 end
-
-print("Creating /test", CreateParentDir("/dev/test/"))
-
---When starting the cpu pause for 60 seconds.				--Move to Manual button press?????
---This is necessary due to the eeprom re-write crashing the game if the cpu interface is open
---Enabling the time hold once the machine is turned on should prevent this from happening 
-
 
 local continuousBroadcast = true
 while true do
 	local ct = computer.millis()
 
-	if ct > t + 60000 and continuousBroadcast then			--60s rebroadcast if no ack received
+    --60s rebroadcast if no ack received
+	if ct > t + 60000 and continuousBroadcast then
 		t = ct
        broadcast(mainDriveID)
 	end
@@ -156,7 +174,7 @@ while true do
 		local s = e[2]
 		local sender = e[3] --Central core
 		local port = e[4]
-		local code = e[5] -- CODE
+		local code = e[5]   -- CODE
 		local path = e[6]	-- File path
 		local data = e[7]	-- File Data
 		
@@ -172,12 +190,11 @@ while true do
                 --Code is file transmit complete
                 allFilesSent = true
                 nic:send(sender,port,"0x0015")
+                print("Send All Files Received Response")
             elseif code == "0x0013" then
                 --Receive last EEprom
-                --this will be the reset eeprom
                 finalEEprom = fs.open(path,"r"):read("*all")
                 print("Boot EEprom Read")
-                --finalEEprom = e[6]
             end
         end
 	 end 

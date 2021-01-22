@@ -28,7 +28,14 @@ Utils = {
                                     local v = (c == 'x') and SysConfig.NumGenerator(0, 0xf) or SysConfig.NumGenerator(8, 0xb)
                                     return string.format('%x', v)
                                 end)
-                            end
+                            end,
+            ignoreFields = {
+                            "availableOptions",
+                            "dataChangedListener",
+                            "mouseListeners",
+                            "parent",
+                            
+                            },
     },
     --String Related found @ http://lua-users.org/wiki/StringRecipes
     strings = {
@@ -124,11 +131,11 @@ Utils = {
                                     if childKey and k == childKey then
                                         return k
                                     else
+                                    --elseif not Utils.table.setContains(Utils.general.ignoreFields,k) then
                                         if type(v) == "table" then
                                             if Utils.table.setContains(v,value) then
                                                 return k
-                                           elseif childKey then
-                                           --elseif childKey and Utils.table.setContains(v,childKey) and v[childKey] == value then
+                                            elseif childKey then
                                                 if Utils.table.setContains(v,childKey) and v[childKey] == value then
                                                     return k
                                                 end
@@ -147,12 +154,14 @@ Utils = {
                             end,
             getAllKeysForValue = function(t, value, childKey)
                                     local result = {}
+                                    --print("Searching for ALL", value, " with childKey: ", childKey)
                                     for k,v in pairs(t) do
                                         --Catch rare case of improper use of function call. 
                                         --If doing simple key lookup setContains is a better choice
                                         if childKey and k == childKey then
                                             result[#result + 1] =  k
                                         else
+                                        --elseif not Utils.table.setContains(Utils.general.ignoreFields,k) then
                                             if type(v) == "table" then
                                                 if Utils.table.setContains(v,value) then
                                                     result[#result + 1] =  k

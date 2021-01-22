@@ -34,6 +34,11 @@ NetworkCodes = {
 
 				NetworkCode("0x0020", "Remote factory status request"),
 				NetworkCode("0x0021", "Remote factory status response"),
+
+
+				NetworkCode("OxFFFD", "NTP Server Time Request"),
+				NetworkCode("OxFFFE", "NTP Server Time Response"),
+				NetworkCode("0xFFFF", "NTP Server address")
 }
 
 NetworkCodeLookup = function(code)

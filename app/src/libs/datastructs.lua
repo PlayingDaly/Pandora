@@ -94,3 +94,71 @@ function AppModule:RegisterAndInitialize(...)
 
     return m
 end
+
+local function bufferLocation(p,len)
+    local this = {
+        point = p,
+        maxLen = len,
+        content = nil
+    }
+
+    function this:AddContent(c)
+        if not self.content then self.content = {} end
+
+        
+        --Update the contents start points
+        c.startpoint.x = self.point.x
+        c.startpoint.y = self.point.y
+        --self.content[#self.content + 1] = c
+        self.content = c
+    end
+    function this:RemoveContent(c)
+        error("FUTURE: REMOVE Content Not Implemented")
+    end
+
+    function this:ShiftDataUp(amt)
+		self.point.y = self.point.y - amt
+        self.content.startpoint.y = self.point.y
+        self.content:SetForeground(UI.SysColors.Write)
+        --self.content:NotifyChanged()
+	end
+
+    return this
+end
+ContentBuffer = function(p, size, lineSz)
+    local this = {
+        point = p,
+        sz = size,
+        maxLen = lineSz,
+        buffer = {}
+    }
+
+    function this:AddContentItem(yIndex, c)
+        --print("Add content to buffer @", yIndex, c.name)
+        if c then
+            local p = self.point
+            p.y = yIndex
+            local bi = bufferLocation(c.startpoint,self.maxLen)
+            bi:AddContent(c)
+            --self.buffer[yIndex] = bi
+            table.insert(self.buffer,bi)
+            --print("ACI:",c.name,bi.point:Details())
+        end
+    end
+    function this:RemoveContent(c)
+        --print("Remove content")
+        local index = Utils.table.getKeyForValue(self.buffer,c.name,"name")
+        --print("Content Index:",index)
+        
+        if index then
+            table.remove(self.buffer,index)
+            --print("Removing content/Paint over:",c.startpoint.x,c.startpoint.y,c.drawX,c.drawY)
+            c:GetDisplay().gpu:fill(c.startpoint.x,c.startpoint.y,c.drawX,c.drawY," ")      --Doesn't work consistently. Change list can cause it overwrite the remove'
+        end
+    end
+    function  this:GetContentItem(index)
+	    return self.buffer[index]
+    end
+
+    return this
+end

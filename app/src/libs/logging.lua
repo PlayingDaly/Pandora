@@ -58,7 +58,7 @@ function Log.WriteOutput(msg, arg)
 		if SysConfig.Display_Manager.enabled and SysConfig.Display_Manager.execute then
 			
 			if not Log.message_grid then
-				Log.message_grid = SysConfig.Display_Manager.execute.Desktop:GetGridByName("grd_runningLog")
+				--Log.message_grid = SysConfig.Display_Manager.execute.Desktop:GetGridByName("grd_runningLog")
 			end
 			if Log.message_grid then
 				Log.message_grid:AddChild(UI.Components.TextBlock(	Log.message_grid:GetDisplay(),

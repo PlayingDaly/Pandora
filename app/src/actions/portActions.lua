@@ -6,21 +6,6 @@ require "libs.networkcode"
 PortActions = {}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 --Port 9998 - New Computer Setup Request
 PortActions.ReceiveCPUSetup = function(portData, ...)
 	local address = select(1,...)
@@ -35,7 +20,7 @@ PortActions.ReceiveCPUSetup = function(portData, ...)
 		
 		--Process the Deployment actions to send
 		print("Process Deployment")		
-		Deploy:RemoteFactorySetup(address,portData.responsePort.port)		
+		Deploy:RemoteFactorySetup(address,portData.responsePort.port)
 		print("RMT Drive: ", driveID)
 		print("Deployment Complete")
 	end
@@ -46,16 +31,21 @@ end
 
 --Port 9999 - Restricted NTP Broadcast Port
 PortActions.ReceiveNTP = function(...)
-	local netcode = select(1,...)
-	local syncData = select(2,...)
+	local address = select(2,...)
+	local netcode = select(4,...)
+	local syncData = select(5,...)
 
-	if netcode == "0x0001" then
-		SysConfig.Time.Set(syndData)
+	--print(select(1,...))
+
+	if netcode == "0xFFFE" then
+		SysConfig.Time:SetNTPAddress(address)
+		SysConfig.Time:Sync(syncData)
+		print("Time Sync R")
 	end
 end
-PortActions.SendNTP = function()
+PortActions.SendNTP = function(address)
 	--Broadcast the SysTime
 	if nic then
-		nic:broadcast(9999, SysTime.ms)
+		nic:send(address, 9999, "0xFFFD", SysTime.ms)
 	end
 end

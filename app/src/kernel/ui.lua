@@ -1,7 +1,7 @@
 require "libs.utils"
 require "libs.drawing"
 require "libs.colors"
-
+require "libs.datastructs"
 UI = {}
 
 --Screen Ratio
@@ -44,11 +44,9 @@ local function UIBase(pd,x,y,h,w,r)
 			v:SetRenderOrder(self:GetRenderOrder() + #self.children)
 		end
 	end
-	function this:RemoveChild(g)
-		if Utils.table.setContains(self.children, g) then
-			g.parent = nil
-			self.children[g] = nil
-		end
+	function this:RemoveChild(c)
+		local index = Utils.table.getKeyForValue(self.children,c.name,"name")
+        table.remove(self.children,index)
 	end
 	function this:SetParent(p)
 		self.parent = p 
@@ -159,18 +157,19 @@ local gridDefaults = function()
 		fcolor = UI.SysColors.Write,
 		bcolor = UI.SysColors.Background,
 		zIndex = 1,
-		margin = UI.Components.Margin(0,0,0,0),
-		--hasChanges = true							--Flag Value to prevent redundant rendering
+		margin = UI.Components.Margin(0,0,0,0)
 	}
 
 	return this;
 end
 UI.Grid = function(pd,x,y,h,w,r,options)
-	--local this = Drawing.Rectangle(pd,UI.Components.Point(math.floor(x),math.floor(y)),h,w,1,UI.SysColors.Transparent,UI.SysColors.Transparent)
 	local this = UIBase(pd,x,y,h,w,r)
 	this.name = "grd_"..Utils.general.generateUuid()
-	this.children = {}
+	--this.children = {}
 	this.ui_settings = gridDefaults()
+	this.availableOptions = {"name","parent","children","columns","rows","zIndex","foreground","background","mouseenter","mouseleave","mousemove","click" }
+	this.currentWritePoint = UI.Components.Point(x,y)
+	this.contentbuffer = ContentBuffer(UI.Components.Point(x,y),h,w)
 
 	function this:UISettings(displayData)
 		if displayData then
@@ -195,10 +194,46 @@ UI.Grid = function(pd,x,y,h,w,r,options)
 			end
 		end
 	end
-	function this:AvailableOptions()
-		print("TextBlock Options:")
-	end	
+	function this:AddChild(v)
+		if not self.children then self.children = {} end
+		if v.type and v.type == 1 then
+			self.children[#self.children + 1] = v
+			v:SetParent(self)
+			v:SetRenderOrder(self:GetRenderOrder() + #self.children)
+			
+			--Add to Write buffer -- Handle sizing here???
+			--print(v.name, v.startpoint:Details())
+			self.contentbuffer:AddContentItem(v.startpoint.y,v)
+		end
+	end
+	function this:RemoveChild(c)
+		local index = Utils.table.getKeyForValue(self.children,c.name,"name")
+        --print("Child Index:",index)
+		self.contentbuffer:RemoveContent(c)
+		table.remove(self.children,index)
+	end
+	function this:CanWrite(point)
+		return self.currentWritePoint:Compare(point)
+	end
+	function this:ShiftDataUp(moveAllAboveY, amt)
 
+		--print(string.format("Shifting up %s spaces, starting at %s", amt, moveAllAboveY))
+
+		--Loop through each item and shift
+		for i=1,moveAllAboveY do
+			local buffItem = self.contentbuffer:GetContentItem(i)
+			if buffItem then
+				--print(string.format("BI:%s p:%s, amt:%s, sy:%s > %s :: %s", buffItem.content.name, buffItem.point:Details(), amt, self.startpoint.y, buffItem.point.y - amt, (buffItem.point.y - amt <= self.startpoint.y)))
+				if buffItem.point.y - amt <= self.startpoint.y then
+					self:RemoveChild(buffItem.content)
+				elseif buffItem.point.y <= moveAllAboveY then
+					buffItem:ShiftDataUp(amt)
+					--print(string.format("BA:%s p:%s, amt:%s, sy:%s", buffItem.content.name, buffItem.point:Details(), amt, self.startpoint.y))
+				end
+			end
+		end
+	end
+	
 	--Grid Setup options
 	if options then
 		--Data props
@@ -258,12 +293,6 @@ UI.Grid = function(pd,x,y,h,w,r,options)
 		if options.click then
 			this.mouseListeners:SetClick(this, options.click)
 		end
-		--if options.leftclickPg then
-		--	this.leftclickPg = options.leftclickPg
-		--end
-		--if options.rtclickPg then
-		--	this.rtclickPg = options.rtclickPg
-		--end
 	end
 
 	return this
@@ -377,12 +406,9 @@ end
 
 --TextBlock
 UI.TextBlock = function(d,p,t,r,options)
-	--print("TextBlock ",p:Details(),t)
 	local this = Drawing.Text(d,p,t,UI.TextAlign.Left, d.width, r, UI.SysColors.Transparent, UI.SysColors.Transparent)
 	this.name = "txt_"..Utils.general.generateUuid()
 	this.parent = nil
-	
-	--print(string.format("NTB: %s\tb:%s\tf:%s", this.name, this.bcolor:Details(), this.fcolor:Details()))
 
 	function this:AvailableOptions()
 		return { "name", "parent", "textcolor", "highlightcolor", "maxlength", "textalignment", "continuousText", "zIndex"}
@@ -431,7 +457,8 @@ UI = {
 		Optimal = Colors.Green,
 		Issue = Colors.Yellow,
 		Error = Colors.Red,
-		Offline = Colors.Blue
+		Offline = Colors.Blue,
+		Test = Colors.Orange
 	},
 	Components = {
 		Border = UI.Border,

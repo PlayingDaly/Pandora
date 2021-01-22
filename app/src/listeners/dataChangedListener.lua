@@ -23,6 +23,9 @@ DataChangedRenderStack = function()
 			return false
 		end
 	end
+	function this:FindItem(item)
+		
+	end
 	return this;
 end
 

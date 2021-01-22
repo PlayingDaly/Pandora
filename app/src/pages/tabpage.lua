@@ -19,10 +19,6 @@ TabPage = function(event, order, layout)
 	function this:AddPageContent()
 
 	end
-	function this:BuildPage()
-
-
-	end
 	function this:AddChildPage(cp)
 		if not self.childpages then self.childpages = {} end
 		self.childpages[#self.childpages + 1] = cp
