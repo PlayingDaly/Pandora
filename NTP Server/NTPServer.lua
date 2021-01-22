@@ -1,18 +1,26 @@
 --NTP Display and Server Code
 local tgpu
-netCard = component.proxy(component.findComponent("netcard"))
+netCard = component.proxy(component.findComponent("networkCard"))
 nic = netCard[1]
+local broadcastPort = 9999
 
 function SetGPU()
-tgpu = computer.getGPUs()[2]
-disp = component.proxy(component.findComponent("Time"))
-tgpu:bindScreen(disp[1])
-tgpu:setSize(11,1)
-tgpu:fill(0,0,11,1," ")
+	tgpu = computer.getGPUs()[1]
+	disp = computer.getScreens()
+	tgpu:bindScreen(disp[1])
+	tgpu:setSize(11,1)
+	tgpu:fill(0,0,11,1," ")
 end
 
---Local VARS
-local broadcastPort = 9999
+function SetRouter()
+	local conRtrs = component.proxy(component.findComponent("Router"))[1]
+
+	if conRtrs then
+		conRtrs:setPortWhitelist(true)
+		conRtrs:addPortList(broadcastPort)
+	end
+end
+
 --System Time Table
 SysTime = {
 			ms = 0,
@@ -59,44 +67,34 @@ function SysTime:GetTick()
 	return self.ms
 end
 
-local timeRunning = false
-
 function SysTime:InitServer()
     SetGPU()
 	nic:open(broadcastPort)
+	event.listen(nic)
 	self.Set(computer.millis())
+
+	--Set the Connected Router to whitelist and only open port 9999
+	SetRouter()
 end
 
 SysTime.Start = function()
-	print("SysTime Start")
-	timeRunning = true;
-    lasttime = 0
-	while timeRunning do
-		SysTime:Sync(computer.millis())
-       if tgpu then
-        tgpu:setText(1,0,SysTime:DisplayTime())
-		 tgpu:flush()
-       else
-        SetGPU()
-       end
+	print("NTP Server Started")
+	
+	while true do
+		SysTime.Set(computer.millis())       
+   		
+       pcall(function() 
+                  tgpu:setText(1,0,SysTime:DisplayTime())
+                  tgpu:flush()
+                end)    
 
-   		if nic then
-         if SysTime.ms > lasttime + 300 then
-           lasttime = SysTime.ms
-		 	  nic:broadcast(broadcastPort, SysTime.ms)
-         end
+		e = table.pack(event.pull(0.1))
+		if e and e[1] == "NetworkMessage" and e[4] == broadcastPort then
+			print(string.format("Time request received from %s. Sending Sync Data!", e[3]))
+			pcall(function() nic:send(e[3], broadcastPort, "0xFFFE", SysTime.ms) end) 
 		end
 	end
-	print("SysTime Done")
-end
-function SysTime:Sync(tick)
-	tick = tick or 0
-	self.Set(tick)
 end
 
 SysTime:InitServer()
 SysTime.Start()
-
-
-
-
