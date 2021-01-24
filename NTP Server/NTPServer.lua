@@ -7,6 +7,12 @@ local broadcastPort = 9999
 function SetGPU()
 	tgpu = computer.getGPUs()[1]
 	disp = computer.getScreens()
+
+	--If not using a screen driver, look for an external screen with a nick of screen
+    if #disp < 1 then
+       disp = component.proxy(component.findComponent("screen"))
+    end
+
 	tgpu:bindScreen(disp[1])
 	tgpu:setSize(11,1)
 	tgpu:fill(0,0,11,1," ")
@@ -90,7 +96,7 @@ SysTime.Start = function()
 
 		e = table.pack(event.pull(0.1))
 		if e and e[1] == "NetworkMessage" and e[4] == broadcastPort then
-			print(string.format("Time request received from %s. Sending Sync Data!", e[3]))
+			print(string.format("Time request received from %s. Sending Sync Data! port:%s:%s", e[3],broadcastPort,"0xFFFE"))
 			pcall(function() nic:send(e[3], broadcastPort, "0xFFFE", SysTime.ms) end) 
 		end
 	end
